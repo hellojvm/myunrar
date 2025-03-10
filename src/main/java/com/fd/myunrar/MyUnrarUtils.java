@@ -21,18 +21,19 @@ public final class MyUnrarUtils {
 		try (Archive archive = new Archive(new ByteArrayInputStream(bts));) {
 			List<FileHeader> fhds = archive.getFileHeaders();
 			for (FileHeader hd : fhds) {
-				try (ByteArrayOutputStream os = new ByteArrayOutputStream();) {
-					archive.extractFile(hd, os);
-					byte[] byteArray = os.toByteArray();
-					String contentType = URLConnection.guessContentTypeFromName(hd.getFileName());
-					if (contentType == null) {
-						try (ByteArrayInputStream is = new ByteArrayInputStream(byteArray);) {
-							contentType = URLConnection.guessContentTypeFromStream(is);
+				if (!hd.isDirectory()) {
+					try (ByteArrayOutputStream os = new ByteArrayOutputStream();) {
+						archive.extractFile(hd, os);
+						byte[] byteArray = os.toByteArray();
+						String contentType = URLConnection.guessContentTypeFromName(hd.getFileName());
+						if (contentType == null) {
+							try (ByteArrayInputStream is = new ByteArrayInputStream(byteArray);) {
+								contentType = URLConnection.guessContentTypeFromStream(is);
+							}
 						}
+						files.add(new UnFileDataInfo(byteArray, hd.getFileName(), contentType));
 					}
-					files.add(new UnFileDataInfo(byteArray, hd.getFileName(), contentType));
 				}
-
 			}
 
 		}
